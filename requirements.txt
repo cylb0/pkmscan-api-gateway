@@ -1,0 +1,9 @@
+django
+django-storages[s3]
+boto3
+django-redis
+psycopg2-binary
+dj-database-url
+pydantic
+pillow
+django-nested-admin
