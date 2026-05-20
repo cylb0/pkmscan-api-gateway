@@ -1,7 +1,7 @@
 from django.db import models
 from .card import Card
 from .energy_type import EnergyType
-from aws_shared.languages import SupportedLanguage
+from shared.domain import SupportedLanguage
 
 
 class Attack(models.Model):

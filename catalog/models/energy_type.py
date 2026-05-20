@@ -1,7 +1,6 @@
 from django.db import models
-from aws_shared.languages import SupportedLanguage
+from shared.domain import SupportedLanguage
 from django.utils.text import slugify
-
 
 class EnergyType(models.Model):
     code = models.CharField(max_length=20, unique=True)
