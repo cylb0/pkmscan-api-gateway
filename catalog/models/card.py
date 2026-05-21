@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.text import slugify
 from .expansion import Expansion
 from .energy_type import EnergyType
-from aws_shared.languages import SupportedLanguage
+from shared.domain import SupportedLanguage
 
 
 class CardVariant(models.Model):

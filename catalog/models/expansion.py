@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
-from aws_shared.languages import SupportedLanguage
+from shared.domain import SupportedLanguage
 
 
 class Expansion(models.Model):
