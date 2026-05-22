@@ -47,7 +47,18 @@ class LocalizedCardInline(NestedStackedInline):
     model = LocalizedCard
     extra = 0
     classes = ("collapse",)
-    fields = ("language", "name", "number", "total_cards_override", "description", "raw_image")
+    fields = (
+        "language",
+        "name",
+        "number",
+        "total_cards_override",
+        "description",
+        "raw_image",
+        "master_image_path",
+        "image_status",
+        "image_error_message"
+    )
+    readonly_fields = ("master_image_path", "image_status", "image_error_message")
     verbose_name = "Translation and Numbering"
     verbose_name_plural = "Translations and Numberings"
 
