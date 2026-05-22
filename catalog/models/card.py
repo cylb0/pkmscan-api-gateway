@@ -3,7 +3,7 @@ from django.utils.text import slugify
 from .expansion import Expansion
 from .energy_type import EnergyType
 from shared.aws import aws_client
-from shared.messaging import ImageTask
+from shared.messaging import ImageTask, ImageProcessingStatus
 from shared.domain import CardIdentity, SupportedLanguage
 
 class CardVariant(models.Model):
@@ -91,8 +91,7 @@ class CardPrinting(models.Model):
 
     def __str__(self):
         return f"{self.card} - {self.variant.name}"
-
-
+    
 class LocalizedCard(models.Model):
     printing = models.ForeignKey(
         CardPrinting, on_delete=models.CASCADE, related_name="localizations"
@@ -113,6 +112,13 @@ class LocalizedCard(models.Model):
 
     raw_image = models.ImageField(upload_to="cards/raw/", null=True, blank=True)
     master_image_path = models.CharField(max_length=255, null=True, blank=True)
+
+    image_status = models.CharField(
+        max_length=20,
+        choices=[(status.value, status.name) for status in ImageProcessingStatus],
+        default=ImageProcessingStatus.PENDING.value
+    )
+    image_error_message = models.TextField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
