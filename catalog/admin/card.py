@@ -43,19 +43,20 @@ class AbilityInline(NestedStackedInline):
     fields = ("id",)
 
 
-class LocalizedCardInline(NestedTabularInline):
+class LocalizedCardInline(NestedStackedInline):
     model = LocalizedCard
-    extra = 1
-    fields = ("language", "name", "number", "total_cards_override", "description")
+    extra = 0
+    classes = ("collapse",)
+    fields = ("language", "name", "number", "total_cards_override", "description", "raw_image")
     verbose_name = "Translation and Numbering"
     verbose_name_plural = "Translations and Numberings"
 
 
 class CardPrintingInline(NestedTabularInline):
     model = CardPrinting
-    extra = 1
+    extra = 0
     inlines = [LocalizedCardInline]
-    fields = ("expansion", "variant", "rarity", "master_image")
+    fields = ("expansion", "variant", "rarity")
     verbose_name = "Printing variation"
     verbose_name_plural = "Printing variations"
 

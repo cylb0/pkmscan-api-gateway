@@ -2,8 +2,9 @@ from django.db import models
 from django.utils.text import slugify
 from .expansion import Expansion
 from .energy_type import EnergyType
-from shared.domain import SupportedLanguage
-
+from shared.aws import aws_client
+from shared.messaging import ImageTask
+from shared.domain import CardIdentity, SupportedLanguage
 
 class CardVariant(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -87,7 +88,6 @@ class CardPrinting(models.Model):
         Expansion, on_delete=models.CASCADE, related_name="cards"
     )
     rarity = models.CharField(max_length=50)
-    master_image = models.ImageField(upload_to="cards/master/", null=True, blank=True)
 
     def __str__(self):
         return f"{self.card} - {self.variant.name}"
@@ -110,6 +110,48 @@ class LocalizedCard(models.Model):
         help_text="Specific total for a group (e.g. 32 for Aquapolis Holos)",
     )
     description = models.TextField(blank=True, null=True)
+
+    raw_image = models.ImageField(upload_to="cards/raw/", null=True, blank=True)
+    master_image_path = models.CharField(max_length=255, null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        image_changed = False
+
+        if not is_new:
+            old_instance = LocalizedCard.objects.get(pk=self.pk)
+            if old_instance.raw_image != self.raw_image:
+                image_changed = True
+        
+        super().save(*args, **kwargs)
+
+        if self.raw_image and (is_new or image_changed):
+            self._send_processing_task()
+
+    def _send_processing_task(self):
+        card_identity = CardIdentity(
+            expansion=self.printing.expansion.code,
+            lang=self.language,
+            id=str(self.id)
+        )
+
+        relative_path = self.raw_image.name
+        storage_location = getattr(self.raw_image.storage, "location", "")
+
+        # Resilient for hypothetical location removal, wont generate a s3 key starting with '/'
+        if storage_location:
+            absolute_s3_key = f"{storage_location.strip("/")}/{relative_path}"
+        else:
+            absolute_s3_key = relative_path
+
+        print("ABSOLUTE",absolute_s3_key)
+
+        task = ImageTask(
+            card=card_identity,
+            s3_key = absolute_s3_key
+        )
+
+        aws_client.trigger_image_processing(task)
 
     @property
     def hp(self):
